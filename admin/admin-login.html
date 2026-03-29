@@ -48,7 +48,7 @@
       const user = users.find(u => u.username === username && u.password === password);
       if (user) {
         localStorage.setItem('loggedInUser', JSON.stringify({ id: user.id, username: user.username, role: user.role }));
-        window.location.href = 'dashboard.html';
+        window.location.href = '../admin/dashboard.html';
       } else {
         alert('Invalid credentials');
       }
