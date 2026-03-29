@@ -1,0 +1,15 @@
+project/
+├── index.html          (login)
+├── dashboard.html
+├── users.html
+├── livestreams.html
+├── vod.html
+├── series.html
+├── categories.html
+├── connections.html
+├── css/
+│   └── style.css
+├── js/
+│   ├── auth.js         (authentication check, logout)
+│   ├── data.js         (data models and CRUD helpers)
+│   └── common.js       (sidebar highlight, modals, etc.)

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connections - Xstream Panel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-[#0c0f17] text-gray-200">
+  <div class="flex flex-col lg:flex-row">
+    <!-- Sidebar (same as before) -->
+    <aside class="w-full lg:w-72 bg-[#0b0e16] border-r border-gray-800 lg:min-h-screen p-5 sticky top-0 z-20">
+      <div class="flex items-center gap-3 mb-10 px-2">
+        <i class="fas fa-play-circle text-2xl text-indigo-500"></i>
+        <h2 class="text-2xl font-bold tracking-tight">Xstream<span class="text-indigo-400">Panel</span></h2>
+      </div>
+      <nav class="space-y-1.5">
+        <a href="dashboard.html" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-gray-300 hover:bg-[#1a1d2a]"><i class="fas fa-tachometer-alt w-5"></i><span>Dashboard</span></a>
+        <a href="users.html" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-gray-300 hover:bg-[#1a1d2a]"><i class="fas fa-users w-5"></i><span>Users</span></a>
+        <a href="livestreams.html" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-gray-300 hover:bg-[#1a1d2a]"><i class="fas fa-broadcast-tower w-5"></i><span>Live Streams</span></a>
+        <a href="vod.html" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-gray-300 hover:bg-[#1a1d2a]"><i class="fas fa-film w-5"></i><span>VOD Movies</span></a>
+        <a href="series.html" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-gray-300 hover:bg-[#1a1d2a]"><i class="fas fa-tv w-5"></i><span>Series</span></a>
+        <a href="categories.html" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-gray-300 hover:bg-[#1a1d2a]"><i class="fas fa-tags w-5"></i><span>Categories</span></a>
+        <a href="connections.html" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-gray-300 hover:bg-[#1a1d2a]"><i class="fas fa-plug w-5"></i><span>Connections</span></a>
+      </nav>
+      <div class="mt-10 pt-6 border-t border-gray-800">
+        <button id="logoutBtn" class="w-full flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 py-2 rounded-xl transition"><i class="fas fa-sign-out-alt"></i> Logout</button>
+      </div>
+    </aside>
+
+    <main class="flex-1 p-6 lg:p-8 overflow-auto">
+      <div id="pageContent" class="max-w-7xl mx-auto"></div>
+<footer class="mt-14 pt-6 border-t border-gray-800 text-gray-500 text-sm flex justify-center items-center">
+  <div class="text-center">
+    Made with <i class="fas fa-heart text-pink-500 text-xs"></i> • Adeel IPTV Panel
+  </div>
+</footer>
+    </main>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/common.js"></script>
+  <script>
+    const user = checkAuth();
+
+    function renderConnections() {
+      const connections = getConnections();
+      let html = `
+        <h2 class="text-2xl font-bold mb-4">Active Connections</h2>
+        <p class="text-gray-400 mb-6">Live user sessions and devices.</p>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-[#0e111b] rounded-xl">
+              <tr class="text-left text-gray-300">
+                <th class="p-3">User</th>
+                <th class="p-3">IP Address</th>
+                <th class="p-3">Device</th>
+                <th class="p-3">Login Time</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+      connections.forEach(c => {
+        html += `<tr class="bg-[#11151f] rounded-xl hover:bg-[#181e2c] transition">
+          <td class="p-3 font-medium"><i class="fas fa-user-circle mr-2 text-indigo-400"></i>${escapeHtml(c.username)}</td>
+          <td class="p-3">${c.ip}</td>
+          <td class="p-3">${c.device}</td>
+          <td class="p-3">${c.loginTime}</td>
+        </tr>`;
+      });
+      html += `</tbody></table></div>`;
+      document.getElementById('pageContent').innerHTML = html;
+    }
+
+    renderConnections();
+    highlightCurrentPage();
+    document.getElementById('logoutBtn').addEventListener('click', logout);
+  </script>
+</body>
+</html>

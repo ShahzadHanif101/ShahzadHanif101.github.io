@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Streams - Xstream Panel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-[#0c0f17] text-gray-200">
+  <!-- Same sidebar as in dashboard.html (copy) -->
+  <div class="flex flex-col lg:flex-row">
+    <aside class="w-full lg:w-72 bg-[#0b0e16] border-r border-gray-800 lg:min-h-screen p-5 sticky top-0 z-20">
+      <div class="flex items-center gap-3 mb-10 px-2">
+        <i class="fas fa-play-circle text-2xl text-indigo-500"></i>
+        <h2 class="text-2xl font-bold tracking-tight">Xstream<span class="text-indigo-400">Panel</span></h2>
+      </div>
+      <nav class="space-y-1.5">
+        <a href="dashboard.html" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-gray-300 hover:bg-[#1a1d2a]"><i class="fas fa-tachometer-alt w-5"></i><span>Dashboard</span></a>
+        <a href="users.html" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-gray-300 hover:bg-[#1a1d2a]"><i class="fas fa-users w-5"></i><span>Users</span></a>
+        <a href="livestreams.html" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-gray-300 hover:bg-[#1a1d2a]"><i class="fas fa-broadcast-tower w-5"></i><span>Live Streams</span></a>
+        <a href="vod.html" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-gray-300 hover:bg-[#1a1d2a]"><i class="fas fa-film w-5"></i><span>VOD Movies</span></a>
+        <a href="series.html" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-gray-300 hover:bg-[#1a1d2a]"><i class="fas fa-tv w-5"></i><span>Series</span></a>
+        <a href="categories.html" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-gray-300 hover:bg-[#1a1d2a]"><i class="fas fa-tags w-5"></i><span>Categories</span></a>
+        <a href="connections.html" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-gray-300 hover:bg-[#1a1d2a]"><i class="fas fa-plug w-5"></i><span>Connections</span></a>
+      </nav>
+      <div class="mt-10 pt-6 border-t border-gray-800">
+        <button id="logoutBtn" class="w-full flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 py-2 rounded-xl transition"><i class="fas fa-sign-out-alt"></i> Logout</button>
+      </div>
+    </aside>
+
+    <main class="flex-1 p-6 lg:p-8 overflow-auto">
+      <div id="pageContent" class="max-w-7xl mx-auto"></div>
+<footer class="mt-14 pt-6 border-t border-gray-800 text-gray-500 text-sm flex justify-center items-center">
+  <div class="text-center">
+    Made with <i class="fas fa-heart text-pink-500 text-xs"></i> • Adeel IPTV Panel
+  </div>
+</footer>
+    </main>
+  </div>
+
+  <div id="modalRoot" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden modal-overlay"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/common.js"></script>
+  <script>
+    const user = checkAuth();
+
+    function renderLiveStreams() {
+      const streams = getLiveStreams();
+      const categories = getLiveCategories();
+      const getCatName = (cid) => categories.find(c => c.id === cid)?.name || 'Unknown';
+      let html = `
+        <div class="flex justify-between items-center mb-6">
+          <div><h2 class="text-2xl font-bold">Live Streams</h2><p class="text-gray-400">Manage live TV channels and streams.</p></div>
+          <button id="addLiveBtn" class="bg-indigo-600 px-5 py-2 rounded-xl"><i class="fas fa-plus mr-1"></i>Add Stream</button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full"><thead><tr class="text-left text-gray-400 border-b border-gray-800"><th class="p-3">Name</th><th>Category</th><th>Source URL</th><th>Actions</th></tr></thead><tbody>
+      `;
+      streams.forEach(s => {
+        html += `<tr class="border-b border-gray-800/50"><td class="p-3 font-medium">${escapeHtml(s.name)}</td><td class="p-3">${getCatName(s.categoryId)}</td><td class="p-3 text-xs break-all max-w-xs">${escapeHtml(s.sourceUrl)}</td><td class="p-3"><button data-id="${s.id}" class="editLive text-indigo-400 mr-3"><i class="fas fa-edit"></i></button><button data-id="${s.id}" class="deleteLive text-red-400"><i class="fas fa-trash"></i></button></td></tr>`;
+      });
+      html += `</tbody></table></div>`;
+      document.getElementById('pageContent').innerHTML = html;
+
+      document.getElementById('addLiveBtn')?.addEventListener('click', () => showLiveModal());
+      document.querySelectorAll('.editLive').forEach(btn => btn.addEventListener('click', (e) => showLiveModal(parseInt(btn.dataset.id))));
+      document.querySelectorAll('.deleteLive').forEach(btn => btn.addEventListener('click', (e) => {
+        if (confirm("Delete stream?")) deleteEntity(STORAGE_KEYS.liveStreams, parseInt(btn.dataset.id), renderLiveStreams);
+      }));
+    }
+
+    function showLiveModal(streamId = null) {
+      const streams = getLiveStreams();
+      const existing = streamId ? streams.find(s => s.id === streamId) : null;
+      const cats = getLiveCategories();
+      const modalHtml = `
+        <div class="p-6"><h3 class="text-xl font-bold">${existing ? 'Edit Stream' : 'New Live Stream'}</h3>
+        <form id="entityForm"><div class="space-y-3 mt-4">
+          <input id="name" placeholder="Stream Name" value="${existing ? escapeHtml(existing.name) : ''}" class="w-full bg-[#1e2130] border rounded-lg p-2" required>
+          <select id="categoryId" class="w-full bg-[#1e2130] border rounded-lg p-2">${cats.map(c => `<option value="${c.id}" ${existing?.categoryId === c.id ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('')}</select>
+          <input id="sourceUrl" placeholder="Source URL" value="${existing ? escapeHtml(existing.sourceUrl) : ''}" class="w-full bg-[#1e2130] border rounded-lg p-2" required>
+          <div class="flex justify-end gap-3 mt-5"><button type="button" class="cancel-modal-btn bg-gray-700 px-4 py-2 rounded-lg">Cancel</button><button type="submit" class="confirm-modal-btn bg-indigo-600 px-4 py-2 rounded-lg">Save</button></div>
+        </div></form></div>
+      `;
+      openModal(modalHtml);
+      document.getElementById('entityForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('name').value.trim();
+        const categoryId = parseInt(document.getElementById('categoryId').value);
+        const sourceUrl = document.getElementById('sourceUrl').value.trim();
+        if (!name || !sourceUrl) return alert("All fields required");
+        let items = getLiveStreams();
+        if (existing) {
+          const idx = items.findIndex(i => i.id === streamId);
+          if (idx !== -1) items[idx] = { ...items[idx], name, categoryId, sourceUrl };
+        } else {
+          items.push({ id: Date.now(), name, categoryId, sourceUrl });
+        }
+        saveLiveStreams(items);
+        closeModal();
+        renderLiveStreams();
+      });
+    }
+
+    renderLiveStreams();
+    highlightCurrentPage();
+    document.getElementById('logoutBtn').addEventListener('click', logout);
+  </script>
+</body>
+</html>

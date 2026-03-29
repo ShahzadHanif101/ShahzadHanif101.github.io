@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Categories - Xstream Panel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-[#0c0f17] text-gray-200">
+  <div class="flex flex-col lg:flex-row">
+    <!-- Sidebar (same as before) -->
+    <aside class="w-full lg:w-72 bg-[#0b0e16] border-r border-gray-800 lg:min-h-screen p-5 sticky top-0 z-20">
+      <div class="flex items-center gap-3 mb-10 px-2">
+        <i class="fas fa-play-circle text-2xl text-indigo-500"></i>
+        <h2 class="text-2xl font-bold tracking-tight">Xstream<span class="text-indigo-400">Panel</span></h2>
+      </div>
+      <nav class="space-y-1.5">
+        <a href="dashboard.html" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-gray-300 hover:bg-[#1a1d2a]"><i class="fas fa-tachometer-alt w-5"></i><span>Dashboard</span></a>
+        <a href="users.html" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-gray-300 hover:bg-[#1a1d2a]"><i class="fas fa-users w-5"></i><span>Users</span></a>
+        <a href="livestreams.html" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-gray-300 hover:bg-[#1a1d2a]"><i class="fas fa-broadcast-tower w-5"></i><span>Live Streams</span></a>
+        <a href="vod.html" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-gray-300 hover:bg-[#1a1d2a]"><i class="fas fa-film w-5"></i><span>VOD Movies</span></a>
+        <a href="series.html" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-gray-300 hover:bg-[#1a1d2a]"><i class="fas fa-tv w-5"></i><span>Series</span></a>
+        <a href="categories.html" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-gray-300 hover:bg-[#1a1d2a]"><i class="fas fa-tags w-5"></i><span>Categories</span></a>
+        <a href="connections.html" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-gray-300 hover:bg-[#1a1d2a]"><i class="fas fa-plug w-5"></i><span>Connections</span></a>
+      </nav>
+      <div class="mt-10 pt-6 border-t border-gray-800">
+        <button id="logoutBtn" class="w-full flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 py-2 rounded-xl transition"><i class="fas fa-sign-out-alt"></i> Logout</button>
+      </div>
+    </aside>
+
+    <main class="flex-1 p-6 lg:p-8 overflow-auto">
+      <div id="pageContent" class="max-w-7xl mx-auto"></div>
+           <footer class="mt-14 pt-6 border-t border-gray-800 text-gray-500 text-sm flex justify-center items-center">
+  <div class="text-center">
+    Made with <i class="fas fa-heart text-pink-500 text-xs"></i> • Adeel IPTV Panel
+  </div>
+</footer>
+    </main>
+  </div>
+  <div id="modalRoot" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden modal-overlay"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/common.js"></script>
+  <script>
+    const user = checkAuth();
+
+    function renderVOD() {
+      const movies = getVodMovies();
+      const cats = getVodCategories();
+      const getCat = (id) => cats.find(c => c.id === id)?.name || 'none';
+      let html = `
+        <div class="flex justify-between items-center mb-6">
+          <div><h2 class="text-2xl font-bold">VOD Movies</h2><p class="text-gray-400">Video on demand library</p></div>
+          <button id="addVodBtn" class="bg-indigo-600 px-5 py-2 rounded-xl"><i class="fas fa-plus"></i> Add Movie</button>
+        </div>
+        <table class="w-full"><thead><tr><th class="p-2 text-left">Title</th><th>Category</th><th>Source URL</th><th>Actions</th></tr></thead><tbody>
+      `;
+      movies.forEach(m => {
+        html += `<tr><td class="p-2">${escapeHtml(m.title)}</td><td>${getCat(m.categoryId)}</td><td class="text-xs break-all">${escapeHtml(m.sourceUrl)}</td><td><button data-id="${m.id}" class="editVod text-indigo-400 mr-2"><i class="fas fa-edit"></i></button><button data-id="${m.id}" class="deleteVod text-red-400"><i class="fas fa-trash"></i></button></td></tr>`;
+      });
+      html += `</tbody></table>`;
+      document.getElementById('pageContent').innerHTML = html;
+
+      document.getElementById('addVodBtn')?.addEventListener('click', () => showVodModal());
+      document.querySelectorAll('.editVod').forEach(btn => btn.addEventListener('click', (e) => showVodModal(parseInt(btn.dataset.id))));
+      document.querySelectorAll('.deleteVod').forEach(btn => btn.addEventListener('click', (e) => {
+        if (confirm("Delete movie?")) deleteEntity(STORAGE_KEYS.vodMovies, parseInt(btn.dataset.id), renderVOD);
+      }));
+    }
+
+    function showVodModal(id = null) {
+      const movies = getVodMovies();
+      const existing = id ? movies.find(m => m.id === id) : null;
+      const cats = getVodCategories();
+      const modalHtml = `
+        <div class="p-6"><h3 class="text-xl font-bold">${existing ? 'Edit Movie' : 'Add Movie'}</h3>
+        <form id="vodForm"><div class="space-y-3 mt-4">
+          <input id="title" placeholder="Movie Title" value="${existing ? escapeHtml(existing.title) : ''}" class="w-full bg-[#1e2130] border rounded p-2" required>
+          <select id="categoryId" class="w-full bg-[#1e2130] border rounded p-2">${cats.map(c => `<option value="${c.id}" ${existing?.categoryId === c.id ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('')}</select>
+          <input id="sourceUrl" placeholder="Source URL" value="${existing ? escapeHtml(existing.sourceUrl) : ''}" class="w-full bg-[#1e2130] border rounded p-2" required>
+          <div class="flex justify-end gap-3 mt-5"><button type="button" class="cancel-modal-btn bg-gray-700 px-4 py-2 rounded">Cancel</button><button type="submit" class="confirm-modal-btn bg-indigo-600 px-4 py-2 rounded">Save</button></div>
+        </div></form></div>
+      `;
+      openModal(modalHtml);
+      document.getElementById('vodForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const title = document.getElementById('title').value.trim();
+        const categoryId = parseInt(document.getElementById('categoryId').value);
+        const sourceUrl = document.getElementById('sourceUrl').value.trim();
+        if (!title || !sourceUrl) return alert("All fields required");
+        let items = getVodMovies();
+        if (existing) {
+          const idx = items.findIndex(i => i.id === id);
+          if (idx !== -1) items[idx] = { ...items[idx], title, categoryId, sourceUrl };
+        } else {
+          items.push({ id: Date.now(), title, categoryId, sourceUrl });
+        }
+        saveVodMovies(items);
+        closeModal();
+        renderVOD();
+      });
+    }
+
+    renderVOD();
+    highlightCurrentPage();
+    document.getElementById('logoutBtn').addEventListener('click', logout);
+  </script>
+</body>
+</html>

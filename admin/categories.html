@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Categories - Xstream Panel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-[#0c0f17] text-gray-200">
+  <div class="flex flex-col lg:flex-row">
+    <!-- Sidebar (same as before) -->
+    <aside class="w-full lg:w-72 bg-[#0b0e16] border-r border-gray-800 lg:min-h-screen p-5 sticky top-0 z-20">
+      <div class="flex items-center gap-3 mb-10 px-2">
+        <i class="fas fa-play-circle text-2xl text-indigo-500"></i>
+        <h2 class="text-2xl font-bold tracking-tight">Xstream<span class="text-indigo-400">Panel</span></h2>
+      </div>
+      <nav class="space-y-1.5">
+        <a href="dashboard.html" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-gray-300 hover:bg-[#1a1d2a]"><i class="fas fa-tachometer-alt w-5"></i><span>Dashboard</span></a>
+        <a href="users.html" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-gray-300 hover:bg-[#1a1d2a]"><i class="fas fa-users w-5"></i><span>Users</span></a>
+        <a href="livestreams.html" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-gray-300 hover:bg-[#1a1d2a]"><i class="fas fa-broadcast-tower w-5"></i><span>Live Streams</span></a>
+        <a href="vod.html" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-gray-300 hover:bg-[#1a1d2a]"><i class="fas fa-film w-5"></i><span>VOD Movies</span></a>
+        <a href="series.html" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-gray-300 hover:bg-[#1a1d2a]"><i class="fas fa-tv w-5"></i><span>Series</span></a>
+        <a href="categories.html" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-gray-300 hover:bg-[#1a1d2a]"><i class="fas fa-tags w-5"></i><span>Categories</span></a>
+        <a href="connections.html" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-gray-300 hover:bg-[#1a1d2a]"><i class="fas fa-plug w-5"></i><span>Connections</span></a>
+      </nav>
+      <div class="mt-10 pt-6 border-t border-gray-800">
+        <button id="logoutBtn" class="w-full flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 py-2 rounded-xl transition"><i class="fas fa-sign-out-alt"></i> Logout</button>
+      </div>
+    </aside>
+
+    <main class="flex-1 p-6 lg:p-8 overflow-auto">
+      <div id="pageContent" class="max-w-7xl mx-auto"></div>
+<footer class="mt-14 pt-6 border-t border-gray-800 text-gray-500 text-sm flex justify-center items-center">
+  <div class="text-center">
+    Made with <i class="fas fa-heart text-pink-500 text-xs"></i> • Adeel IPTV Panel
+  </div>
+</footer>
+    </main>
+  </div>
+
+  <div id="modalRoot" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden modal-overlay">
+    <div id="modalContent" class="bg-[#11141f] rounded-2xl w-full max-w-md border border-gray-700"></div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/common.js"></script>
+  <script>
+    const user = checkAuth();
+
+    function renderCategories() {
+      const liveCats = getLiveCategories();
+      const vodCats = getVodCategories();
+      const seriesCats = getSeriesCategories();
+
+      const renderGroup = (title, cats, type) => `
+        <div class="bg-[#121520] rounded-xl p-5 mb-6">
+          <h3 class="text-xl font-semibold mb-3">${title}</h3>
+          <div class="space-y-2">
+            ${cats.map(c => `
+              <div class="flex justify-between items-center bg-[#1b1e2c] px-4 py-2 rounded-lg">
+                <span><span class="font-mono">${escapeHtml(c.name)}</span> <span class="text-gray-400 text-xs">ID: ${c.id}</span></span>
+                <div>
+                  <button data-id="${c.id}" data-type="${type}" class="editCatBtn text-indigo-400 mr-3"><i class="fas fa-edit"></i></button>
+                  <button data-id="${c.id}" data-type="${type}" class="delCatBtn text-red-400"><i class="fas fa-trash"></i></button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+          <button data-type="${type}" class="addCatBtn mt-3 text-indigo-400 border border-indigo-500/40 px-4 py-1.5 rounded-lg text-sm"><i class="fas fa-plus mr-1"></i>Add Category</button>
+        </div>
+      `;
+
+      const html = `
+        <h2 class="text-2xl font-bold mb-4">Categories</h2>
+        <p class="text-gray-400 mb-6">Organize content across your platform.</p>
+        ${renderGroup('Live Categories', liveCats, 'live')}
+        ${renderGroup('VOD Categories', vodCats, 'vod')}
+        ${renderGroup('Series Categories', seriesCats, 'series')}
+      `;
+      document.getElementById('pageContent').innerHTML = html;
+
+      // Add event listeners
+      document.querySelectorAll('.addCatBtn').forEach(btn => btn.addEventListener('click', () => showCategoryModal(btn.dataset.type)));
+      document.querySelectorAll('.editCatBtn').forEach(btn => btn.addEventListener('click', () => showCategoryModal(btn.dataset.type, parseInt(btn.dataset.id))));
+      document.querySelectorAll('.delCatBtn').forEach(btn => btn.addEventListener('click', () => {
+        if (confirm('Delete this category? Items using it may become orphaned.')) {
+          deleteCategory(btn.dataset.type, parseInt(btn.dataset.id));
+        }
+      }));
+    }
+
+    function showCategoryModal(type, id = null) {
+      let categories, saveFn, nameValue = '';
+      if (type === 'live') {
+        categories = getLiveCategories();
+        saveFn = saveLiveCategories;
+      } else if (type === 'vod') {
+        categories = getVodCategories();
+        saveFn = saveVodCategories;
+      } else {
+        categories = getSeriesCategories();
+        saveFn = saveSeriesCategories;
+      }
+      if (id) {
+        const cat = categories.find(c => c.id === id);
+        if (cat) nameValue = cat.name;
+      }
+      const modalHtml = `
+        <div class="p-6">
+          <h3 class="text-xl font-bold mb-4">${id ? 'Edit' : 'Add'} Category (${type.toUpperCase()})</h3>
+          <form id="catForm">
+            <input id="catName" placeholder="Category name" value="${escapeHtml(nameValue)}" class="w-full bg-[#1e2130] border border-gray-700 rounded-lg px-3 py-2" required>
+            <div class="flex justify-end gap-3 mt-6">
+              <button type="button" class="cancel-modal-btn px-4 py-2 bg-gray-700 rounded-lg">Cancel</button>
+              <button type="submit" class="confirm-modal-btn px-4 py-2 bg-indigo-600 rounded-lg">Save</button>
+            </div>
+          </form>
+        </div>
+      `;
+      openModal(modalHtml);
+      const form = document.getElementById('catForm');
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const newName = document.getElementById('catName').value.trim();
+        if (!newName) return alert("Category name required");
+        let arr = [...categories];
+        if (id) {
+          const idx = arr.findIndex(c => c.id === id);
+          if (idx !== -1) arr[idx].name = newName;
+        } else {
+          arr.push({ id: Date.now(), name: newName });
+        }
+        saveFn(arr);
+        closeModal();
+        renderCategories();
+      });
+    }
+
+    function deleteCategory(type, id) {
+      let categories, saveFn;
+      if (type === 'live') {
+        categories = getLiveCategories();
+        saveFn = saveLiveCategories;
+      } else if (type === 'vod') {
+        categories = getVodCategories();
+        saveFn = saveVodCategories;
+      } else {
+        categories = getSeriesCategories();
+        saveFn = saveSeriesCategories;
+      }
+      const newArr = categories.filter(c => c.id !== id);
+      saveFn(newArr);
+      renderCategories();
+    }
+
+    renderCategories();
+    highlightCurrentPage();
+    document.getElementById('logoutBtn').addEventListener('click', logout);
+  </script>
+</body>
+</html>
