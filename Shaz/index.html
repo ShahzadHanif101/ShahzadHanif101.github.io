@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Xstream Panel | IPTV Management</title>
+  <!-- Tailwind + Font Awesome + Google Fonts -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    body { background: #0a0c12; }
+    .sidebar-item.active {
+      background: linear-gradient(95deg, #2c2f3f 0%, #1e212e 100%);
+      border-left: 3px solid #4f46e5;
+      color: white;
+    }
+    .modal-overlay {
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+    }
+    .card-hover {
+      transition: all 0.2s ease;
+    }
+    .card-hover:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 20px 25px -12px rgba(0,0,0,0.5);
+    }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #1f212e; }
+    ::-webkit-scrollbar-thumb { background: #4f46e5; border-radius: 8px; }
+    table { border-collapse: separate; border-spacing: 0 6px; }
+    .action-btn { transition: 0.1s ease; }
+  </style>
+</head>
+<body class="text-gray-200">
+
+  <!-- LOGIN CONTAINER -->
+  <div id="loginContainer" class="min-h-screen flex items-center justify-center p-5 bg-gradient-to-br from-[#0b0e17] to-[#141824]">
+    <div class="w-full max-w-md bg-[#11141f]/90 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-800 p-8">
+      <div class="text-center mb-8">
+        <i class="fas fa-tv text-5xl text-indigo-500 mb-3"></i>
+        <h1 class="text-3xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">Xstream Panel</h1>
+        <p class="text-gray-400 text-sm mt-1">Sign in to manage your streams</p>
+      </div>
+      <form id="loginForm">
+        <div class="mb-5">
+          <label class="block text-gray-300 text-sm font-medium mb-2"><i class="fas fa-user mr-2"></i>Username</label>
+          <input type="text" id="loginUsername" class="w-full bg-[#1e2130] border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="admin" autocomplete="off">
+        </div>
+        <div class="mb-6">
+          <label class="block text-gray-300 text-sm font-medium mb-2"><i class="fas fa-lock mr-2"></i>Password</label>
+          <input type="password" id="loginPassword" class="w-full bg-[#1e2130] border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="••••••••">
+        </div>
+        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 transition py-3 rounded-xl font-semibold shadow-lg flex items-center justify-center gap-2"><i class="fas fa-sign-in-alt"></i> Sign In to Admin →</button>
+      </form>
+      <div class="text-center text-gray-500 text-xs mt-8">Made with Replit ✨</div>
+    </div>
+  </div>
+
+  <!-- MAIN APP (hidden after login) -->
+  <div id="appContainer" class="hidden min-h-screen bg-[#0c0f17]">
+    <div class="flex flex-col lg:flex-row">
+      <!-- SIDEBAR -->
+      <aside class="w-full lg:w-72 bg-[#0b0e16] border-r border-gray-800 lg:min-h-screen p-5 sticky top-0 z-20">
+        <div class="flex items-center gap-3 mb-10 px-2">
+          <i class="fas fa-play-circle text-2xl text-indigo-500"></i>
+          <h2 class="text-2xl font-bold tracking-tight">Xstream<span class="text-indigo-400">Panel</span></h2>
+        </div>
+        <nav class="space-y-1.5">
+          <div data-page="dashboard" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-gray-300 hover:bg-[#1a1d2a]"><i class="fas fa-tachometer-alt w-5"></i><span>Dashboard</span></div>
+          <div data-page="users" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-gray-300 hover:bg-[#1a1d2a]"><i class="fas fa-users w-5"></i><span>Users</span></div>
+          <div data-page="livestreams" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-gray-300 hover:bg-[#1a1d2a]"><i class="fas fa-broadcast-tower w-5"></i><span>Live Streams</span></div>
+          <div data-page="vod" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-gray-300 hover:bg-[#1a1d2a]"><i class="fas fa-film w-5"></i><span>VOD Movies</span></div>
+          <div data-page="series" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-gray-300 hover:bg-[#1a1d2a]"><i class="fas fa-tv w-5"></i><span>Series</span></div>
+          <div data-page="categories" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-gray-300 hover:bg-[#1a1d2a]"><i class="fas fa-tags w-5"></i><span>Categories</span></div>
+          <div data-page="connections" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-gray-300 hover:bg-[#1a1d2a]"><i class="fas fa-plug w-5"></i><span>Connections</span></div>
+        </nav>
+        <div class="mt-10 pt-6 border-t border-gray-800">
+          <button id="logoutBtn" class="w-full flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 py-2 rounded-xl transition"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>
+      </aside>
+
+      <!-- MAIN CONTENT -->
+      <main class="flex-1 p-6 lg:p-8 overflow-auto">
+        <div id="pageContent" class="max-w-7xl mx-auto">
+          <!-- dynamic pages injected -->
+        </div>
+        <!-- FOOTER with API URL -->
+        <footer class="mt-14 pt-6 border-t border-gray-800 text-gray-500 text-sm flex flex-wrap justify-between items-center">
+          <div><i class="fas fa-link mr-2"></i>ServerAPIURL: <span id="apiUrlDisplay" class="text-indigo-300 break-all">https://dfd66972-8f41-47f2-84d3-0e191f816055-00-2maqhy7ncpixs.worf.replit.dev</span></div>
+          <div>Made with Replit <i class="fas fa-heart text-pink-500 text-xs"></i> • IPTV Panel</div>
+        </footer>
+      </main>
+    </div>
+  </div>
+
+  <!-- MODAL DYNAMIC (generic container) -->
+  <div id="modalRoot" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden modal-overlay transition-all" style="background: rgba(0,0,0,0.7);">
+    <div class="bg-[#11141f] rounded-2xl w-full max-w-md border border-gray-700 shadow-2xl transform transition-all" id="modalContent"></div>
+  </div>
+
+  <script>
+    // ---------- STORAGE KEYS ----------
+    const STORAGE = {
+      users: 'xstream_users',
+      liveStreams: 'xstream_liveStreams',
+      vodMovies: 'xstream_vodMovies',
+      series: 'xstream_series',
+      liveCategories: 'xstream_liveCategories',
+      vodCategories: 'xstream_vodCategories',
+      seriesCategories: 'xstream_seriesCategories',
+      connections: 'xstream_connectionsMock'
+    };
+
+    // ---------- DEFAULT DATA SEED ----------
+    function initData() {
+      if (!localStorage.getItem(STORAGE.users)) {
+        const defaultUsers = [
+          { id: 1, username: 'admin', password: 'admin', role: 'admin', connections: 0, status: 'active', created: new Date().toISOString().slice(0,10) },
+          { id: 2, username: 'streamer1', password: '1234', role: 'user', connections: 2, status: 'active', created: new Date().toISOString().slice(0,10) }
+        ];
+        localStorage.setItem(STORAGE.users, JSON.stringify(defaultUsers));
+      }
+      if (!localStorage.getItem(STORAGE.liveCategories)) {
+        localStorage.setItem(STORAGE.liveCategories, JSON.stringify([{ id: 1, name: 'News' }, { id: 2, name: 'Sports' }]));
+      }
+      if (!localStorage.getItem(STORAGE.vodCategories)) {
+        localStorage.setItem(STORAGE.vodCategories, JSON.stringify([{ id: 4, name: 'Action' }, { id: 5, name: 'Drama' }, { id: 6, name: 'Comedy' }]));
+      }
+      if (!localStorage.getItem(STORAGE.seriesCategories)) {
+        localStorage.setItem(STORAGE.seriesCategories, JSON.stringify([{ id: 7, name: 'Drama Series' }, { id: 8, name: 'Comedy Series' }]));
+      }
+      if (!localStorage.getItem(STORAGE.liveStreams)) {
+        localStorage.setItem(STORAGE.liveStreams, JSON.stringify([
+          { id: 101, name: 'Sample News Channel', categoryId: 1, sourceUrl: 'http://commondatastorage.googleapis.com/.../news.m3u8' },
+          { id: 102, name: 'Sample Sports Channel', categoryId: 2, sourceUrl: 'http://commondatastorage.googleapis.com/.../sports.m3u8' }
+        ]));
+      }
+      if (!localStorage.getItem(STORAGE.vodMovies)) {
+        localStorage.setItem(STORAGE.vodMovies, JSON.stringify([
+          { id: 201, title: 'Blast Action', categoryId: 4, sourceUrl: 'https://example.com/action.mp4' },
+          { id: 202, title: 'Deep Drama', categoryId: 5, sourceUrl: 'https://example.com/drama.mp4' },
+          { id: 203, title: 'Laugh Factory', categoryId: 6, sourceUrl: 'https://example.com/comedy.mp4' }
+        ]));
+      }
+      if (!localStorage.getItem(STORAGE.series)) {
+        localStorage.setItem(STORAGE.series, JSON.stringify([
+          { id: 301, title: 'The Crowned', categoryId: 7, sourceUrl: 'https://example.com/series/drama.m3u' },
+          { id: 302, title: 'Standup Nights', categoryId: 8, sourceUrl: 'https://example.com/series/comedy.m3u' }
+        ]));
+      }
+      if (!localStorage.getItem(STORAGE.connections)) {
+        localStorage.setItem(STORAGE.connections, JSON.stringify([
+          { id: 1001, username: 'streamer1', ip: '192.168.1.45', device: 'Android TV', loginTime: new Date().toLocaleString() },
+          { id: 1002, username: 'admin', ip: '10.0.0.12', device: 'Chrome (Mac)', loginTime: new Date().toLocaleString() },
+          { id: 1003, username: 'streamer1', ip: '192.168.1.88', device: 'iPhone', loginTime: new Date().toLocaleString() }
+        ]));
+      }
+    }
+    initData();
+
+    // Helper getters
+    function getLiveCategories() { return JSON.parse(localStorage.getItem(STORAGE.liveCategories) || '[]'); }
+    function getVodCategories() { return JSON.parse(localStorage.getItem(STORAGE.vodCategories) || '[]'); }
+    function getSeriesCategories() { return JSON.parse(localStorage.getItem(STORAGE.seriesCategories) || '[]'); }
+    function getLiveStreams() { return JSON.parse(localStorage.getItem(STORAGE.liveStreams) || '[]'); }
+    function getVodMovies() { return JSON.parse(localStorage.getItem(STORAGE.vodMovies) || '[]'); }
+    function getSeries() { return JSON.parse(localStorage.getItem(STORAGE.series) || '[]'); }
+    function getUsers() { return JSON.parse(localStorage.getItem(STORAGE.users) || '[]'); }
+    function getConnections() { return JSON.parse(localStorage.getItem(STORAGE.connections) || '[]'); }
+    function saveUsers(users) { localStorage.setItem(STORAGE.users, JSON.stringify(users)); }
+    function saveLiveStreams(data) { localStorage.setItem(STORAGE.liveStreams, JSON.stringify(data)); }
+    function saveVodMovies(data) { localStorage.setItem(STORAGE.vodMovies, JSON.stringify(data)); }
+    function saveSeries(data) { localStorage.setItem(STORAGE.series, JSON.stringify(data)); }
+    function saveLiveCategories(data) { localStorage.setItem(STORAGE.liveCategories, JSON.stringify(data)); }
+    function saveVodCategories(data) { localStorage.setItem(STORAGE.vodCategories, JSON.stringify(data)); }
+    function saveSeriesCategories(data) { localStorage.setItem(STORAGE.seriesCategories, JSON.stringify(data)); }
+
+    // Global state
+    let currentUser = null;
+    let currentPage = 'dashboard';
+
+    // DOM elements
+    const loginContainer = document.getElementById('loginContainer');
+    const appContainer = document.getElementById('appContainer');
+    const pageContent = document.getElementById('pageContent');
+    const modalRoot = document.getElementById('modalRoot');
+    let activeModalCallback = null;
+
+    function closeModal() { modalRoot.classList.add('hidden'); modalRoot.innerHTML = '<div id="modalContent" class="bg-[#11141f] rounded-2xl w-full max-w-md border border-gray-700"></div>'; activeModalCallback = null; }
+    function openModal(contentHtml, onConfirmCallback = null) {
+      const modalContentDiv = document.getElementById('modalContent');
+      modalContentDiv.innerHTML = contentHtml;
+      modalRoot.classList.remove('hidden');
+      activeModalCallback = onConfirmCallback;
+      const closeBtn = modalRoot.querySelector('.close-modal-btn');
+      if (closeBtn) closeBtn.addEventListener('click', closeModal);
+      const cancelBtn = modalRoot.querySelector('.cancel-modal-btn');
+      if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+      const confirmBtn = modalRoot.querySelector('.confirm-modal-btn');
+      if (confirmBtn && onConfirmCallback) confirmBtn.addEventListener('click', () => { onConfirmCallback(); closeModal(); });
+    }
+
+    // render functions
+    function renderDashboard() {
+      const users = getUsers();
+      const live = getLiveStreams();
+      const vods = getVodMovies();
+      const seriesList = getSeries();
+      pageContent.innerHTML = `
+        <div class="mb-8"><h1 class="text-3xl font-bold bg-gradient-to-r from-indigo-300 to-white bg-clip-text text-transparent">Dashboard</h1><p class="text-gray-400 mt-1">Overview of your IPTV ecosystem</p></div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div class="bg-[#121520] rounded-2xl p-6 border border-gray-800 card-hover"><i class="fas fa-users text-3xl text-indigo-400 mb-3"></i><h3 class="text-gray-400 text-sm">Total Users</h3><p class="text-3xl font-bold">${users.length}</p></div>
+          <div class="bg-[#121520] rounded-2xl p-6 border border-gray-800 card-hover"><i class="fas fa-broadcast-tower text-3xl text-emerald-400 mb-3"></i><h3 class="text-gray-400 text-sm">Live Streams</h3><p class="text-3xl font-bold">${live.length}</p></div>
+          <div class="bg-[#121520] rounded-2xl p-6 border border-gray-800 card-hover"><i class="fas fa-film text-3xl text-rose-400 mb-3"></i><h3 class="text-gray-400 text-sm">VOD Movies</h3><p class="text-3xl font-bold">${vods.length}</p></div>
+          <div class="bg-[#121520] rounded-2xl p-6 border border-gray-800 card-hover"><i class="fas fa-tv text-3xl text-amber-400 mb-3"></i><h3 class="text-gray-400 text-sm">Series</h3><p class="text-3xl font-bold">${seriesList.length}</p></div>
+        </div>
+        <div class="mt-8 bg-[#121520]/50 rounded-2xl p-6 border border-gray-800"><p class="text-indigo-300"><i class="fas fa-circle-info mr-2"></i> Xstream Panel ready — manage categories, streams and users from sidebar.</p></div>
+      `;
+    }
+
+    function renderUsers() {
+      const users = getUsers();
+      let html = `<div class="flex justify-between items-center flex-wrap mb-6"><div><h2 class="text-2xl font-bold">Users</h2><p class="text-gray-400">Manage subscribers and administrators.</p></div><button id="addUserBtn" class="bg-indigo-600 hover:bg-indigo-700 px-5 py-2 rounded-xl flex items-center gap-2"><i class="fas fa-plus"></i> Add User</button></div>`;
+      html += `<div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-[#0e111b] rounded-xl"><tr class="text-left text-gray-300"><th class="p-3">USER</th><th class="p-3">ROLE</th><th class="p-3">CONNECTIONS</th><th class="p-3">STATUS</th><th class="p-3">CREATED</th><th class="p-3">ACTIONS</th></tr></thead><tbody>`;
+      users.forEach(u => {
+        html += `<tr class="bg-[#11151f] rounded-xl hover:bg-[#181e2c] transition"><td class="p-3 font-medium"><i class="fas fa-user-circle mr-2 text-indigo-400"></i>${escapeHtml(u.username)}</td><td class="p-3 capitalize">${u.role}</td><td class="p-3">${u.connections}</td><td class="p-3"><span class="px-2 py-1 rounded-full text-xs ${u.status === 'active' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}">${u.status}</span></td><td class="p-3">${u.created}</td><td class="p-3"><button data-id="${u.id}" data-action="editUser" class="edit-user-btn text-indigo-400 hover:text-indigo-300 mr-3"><i class="fas fa-edit"></i></button><button data-id="${u.id}" data-action="deleteUser" class="delete-user-btn text-red-400 hover:text-red-300"><i class="fas fa-trash"></i></button></td></tr>`;
+      });
+      html += `</tbody></table></div>`;
+      pageContent.innerHTML = html;
+      document.getElementById('addUserBtn')?.addEventListener('click', () => showUserModal());
+      document.querySelectorAll('.edit-user-btn').forEach(btn => btn.addEventListener('click', (e) => { const id = parseInt(btn.dataset.id); showUserModal(id); }));
+      document.querySelectorAll('.delete-user-btn').forEach(btn => btn.addEventListener('click', (e) => { const id = parseInt(btn.dataset.id); deleteUserById(id); }));
+    }
+
+    function showUserModal(userId = null) {
+      const users = getUsers();
+      const existing = userId ? users.find(u => u.id === userId) : null;
+      const isEdit = !!existing;
+      const modalHtml = `
+        <div class="p-6"><h3 class="text-xl font-bold mb-4">${isEdit ? 'Edit User' : 'Add New User'}</h3>
+        <form id="userFormModal"><div class="space-y-4"><div><label class="block text-sm mb-1">Username</label><input type="text" id="modalUsername" value="${isEdit ? escapeHtml(existing.username) : ''}" class="w-full bg-[#1e2130] border border-gray-700 rounded-lg px-3 py-2" required></div>
+        <div><label class="block text-sm mb-1">Password ${isEdit ? '(leave blank to keep same)' : ''}</label><input type="password" id="modalPassword" class="w-full bg-[#1e2130] border border-gray-700 rounded-lg px-3 py-2"></div>
+        <div><label class="block text-sm mb-1">Role</label><select id="modalRole" class="w-full bg-[#1e2130] border border-gray-700 rounded-lg px-3 py-2"><option value="user" ${existing?.role === 'user' ? 'selected' : ''}>User</option><option value="admin" ${existing?.role === 'admin' ? 'selected' : ''}>Admin</option></select></div>
+        <div><label class="block text-sm mb-1">Connections (max allowed)</label><input type="number" id="modalConnections" value="${existing?.connections || 0}" class="w-full bg-[#1e2130] border border-gray-700 rounded-lg px-3 py-2"></div>
+        <div><label class="block text-sm mb-1">Status</label><select id="modalStatus" class="w-full bg-[#1e2130] border border-gray-700 rounded-lg px-3 py-2"><option value="active" ${existing?.status === 'active' ? 'selected' : ''}>Active</option><option value="inactive" ${existing?.status === 'inactive' ? 'selected' : ''}>Inactive</option></select></div>
+        <div class="flex justify-end gap-3 mt-6"><button type="button" class="cancel-modal-btn px-4 py-2 bg-gray-700 rounded-lg">Cancel</button><button type="submit" class="confirm-modal-btn px-4 py-2 bg-indigo-600 rounded-lg">Save</button></div></div></form></div>
+      `;
+      openModal(modalHtml, null);
+      const form = document.getElementById('userFormModal');
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const username = document.getElementById('modalUsername').value.trim();
+        const role = document.getElementById('modalRole').value;
+        const connections = parseInt(document.getElementById('modalConnections').value);
+        const status = document.getElementById('modalStatus').value;
+        let password = document.getElementById('modalPassword').value;
+        if (!username) return alert("Username required");
+        let updatedUsers = [...getUsers()];
+        if (isEdit) {
+          const idx = updatedUsers.findIndex(u => u.id === userId);
+          if (idx !== -1) {
+            updatedUsers[idx].username = username;
+            updatedUsers[idx].role = role;
+            updatedUsers[idx].connections = connections;
+            updatedUsers[idx].status = status;
+            if (password) updatedUsers[idx].password = password;
+          }
+        } else {
+          if (!password) password = 'changeme';
+          const newId = Date.now();
+          updatedUsers.push({ id: newId, username, password, role, connections, status, created: new Date().toISOString().slice(0,10) });
+        }
+        saveUsers(updatedUsers);
+        closeModal();
+        renderUsers();
+      });
+    }
+
+    function deleteUserById(id) {
+      const users = getUsers();
+      if (users.find(u => u.id === id)?.username === 'admin') { alert("Cannot delete main admin account."); return; }
+      const filtered = users.filter(u => u.id !== id);
+      saveUsers(filtered);
+      renderUsers();
+    }
+
+    // Generic render for Live streams
+    function renderLiveStreams() {
+      const streams = getLiveStreams();
+      const categories = getLiveCategories();
+      const getCatName = (cid) => categories.find(c => c.id === cid)?.name || 'Unknown';
+      let html = `<div class="flex justify-between items-center mb-6"><div><h2 class="text-2xl font-bold">Live Streams</h2><p class="text-gray-400">Manage live TV channels and streams.</p></div><button id="addLiveBtn" class="bg-indigo-600 px-5 py-2 rounded-xl"><i class="fas fa-plus mr-1"></i>Add Stream</button></div><div class="overflow-x-auto"><table class="w-full"><thead><tr class="text-left text-gray-400 border-b border-gray-800"><th class="p-3">Name</th><th>Category</th><th>Source URL</th><th>Actions</th></tr></thead><tbody>`;
+      streams.forEach(s => {
+        html += `<tr class="border-b border-gray-800/50"><td class="p-3 font-medium">${escapeHtml(s.name)}</td><td class="p-3">${getCatName(s.categoryId)}</td><td class="p-3 text-xs break-all max-w-xs">${escapeHtml(s.sourceUrl)}</td><td class="p-3"><button data-id="${s.id}" class="editLive text-indigo-400 mr-3"><i class="fas fa-edit"></i></button><button data-id="${s.id}" class="deleteLive text-red-400"><i class="fas fa-trash"></i></button></td></tr>`;
+      });
+      html += `</tbody></table></div>`;
+      pageContent.innerHTML = html;
+      document.getElementById('addLiveBtn')?.addEventListener('click', () => showLiveModal());
+      document.querySelectorAll('.editLive').forEach(btn => btn.addEventListener('click', (e) => showLiveModal(parseInt(btn.dataset.id))));
+      document.querySelectorAll('.deleteLive').forEach(btn => btn.addEventListener('click', (e) => { if(confirm("Delete stream?")) deleteEntity('liveStreams', parseInt(btn.dataset.id), renderLiveStreams); }));
+    }
+
+    function showLiveModal(streamId = null) {
+      const streams = getLiveStreams();
+      const existing = streamId ? streams.find(s => s.id === streamId) : null;
+      const cats = getLiveCategories();
+      const modalHtml = `<div class="p-6"><h3 class="text-xl font-bold">${existing ? 'Edit Stream' : 'New Live Stream'}</h3><form id="entityForm"><div class="space-y-3 mt-4"><input id="name" placeholder="Stream Name" value="${existing ? escapeHtml(existing.name) : ''}" class="w-full bg-[#1e2130] border rounded-lg p-2" required><select id="categoryId" class="w-full bg-[#1e2130] border rounded-lg p-2">${cats.map(c => `<option value="${c.id}" ${existing?.categoryId === c.id ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('')}</select><input id="sourceUrl" placeholder="Source URL" value="${existing ? escapeHtml(existing.sourceUrl) : ''}" class="w-full bg-[#1e2130] border rounded-lg p-2" required><div class="flex justify-end gap-3 mt-5"><button type="button" class="cancel-modal-btn bg-gray-700 px-4 py-2 rounded-lg">Cancel</button><button type="submit" class="confirm-modal-btn bg-indigo-600 px-4 py-2 rounded-lg">Save</button></div></div></form></div>`;
+      openModal(modalHtml, null);
+      document.getElementById('entityForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('name').value.trim();
+        const categoryId = parseInt(document.getElementById('categoryId').value);
+        const sourceUrl = document.getElementById('sourceUrl').value.trim();
+        if (!name || !sourceUrl) return alert("All fields required");
+        let items = getLiveStreams();
+        if (existing) {
+          const idx = items.findIndex(i => i.id === streamId);
+          if(idx !== -1) { items[idx] = { ...items[idx], name, categoryId, sourceUrl }; }
+        } else { items.push({ id: Date.now(), name, categoryId, sourceUrl }); }
+        saveLiveStreams(items);
+        closeModal();
+        renderLiveStreams();
+      });
+    }
+
+    function renderVOD() {
+      const movies = getVodMovies();
+      const cats = getVodCategories();
+      const getCat = (id) => cats.find(c=>c.id === id)?.name || 'none';
+      let html = `<div class="flex justify-between items-center mb-6"><div><h2 class="text-2xl font-bold">VOD Movies</h2><p class="text-gray-400">Video on demand library</p></div><button id="addVodBtn" class="bg-indigo-600 px-5 py-2 rounded-xl"><i class="fas fa-plus"></i> Add Movie</button></div><table class="w-full"><thead><tr><th class="p-2 text-left">Title</th><th>Category</th><th>Source URL</th><th>Actions</th></tr></thead><tbody>`;
+      movies.forEach(m => { html += `<tr><td class="p-2">${escapeHtml(m.title)}</td><td>${getCat(m.categoryId)}</td><td class="text-xs break-all">${escapeHtml(m.sourceUrl)}</td><td><button data-id="${m.id}" class="editVod text-indigo-400 mr-2"><i class="fas fa-edit"></i></button><button data-id="${m.id}" class="deleteVod text-red-400"><i class="fas fa-trash"></i></button></td></tr>`; });
+      html += `</tbody></table>`;
+      pageContent.innerHTML = html;
+      document.getElementById('addVodBtn')?.addEventListener('click', () => showVodModal());
+      document.querySelectorAll('.editVod').forEach(btn => btn.addEventListener('click', (e) => showVodModal(parseInt(btn.dataset.id))));
+      document.querySelectorAll('.deleteVod').forEach(btn => btn.addEventListener('click', (e) => { if(confirm("Delete movie?")) deleteEntity('vodMovies', parseInt(btn.dataset.id), renderVOD); }));
+    }
+    function showVodModal(id=null) { genericMediaModal(id, 'vodMovies', getVodCategories, saveVodMovies, renderVOD, 'title', 'Movie Title'); }
+    function renderSeriesPage() { genericRenderSeries(); }
+    function genericRenderSeries() {
+      const seriesList = getSeries(); const cats = getSeriesCategories(); const getCat = (id)=> cats.find(c=>c.id===id)?.name||'';
+      let html = `<div class="flex justify-between items-center mb-6"><div><h2 class="text-2xl font-bold">Series</h2></div><button id="addSeriesBtn" class="bg-indigo-600 px-5 py-2 rounded-xl"><i class="fas fa-plus"></i> Add Series</button></div><table class="w-full"><thead><tr><th>Title</th><th>Category</th><th>Source URL</th><th>Actions</th></tr></thead><tbody>`;
+      seriesList.forEach(s=>{html+=`<tr><td class="p-2">${escapeHtml(s.title)}</td><td>${getCat(s.categoryId)}</td><td class="text-xs">${escapeHtml(s.sourceUrl)}</td><td><button data-id="${s.id}" class="editSeriesBtn text-indigo-400 mr-2"><i class="fas fa-edit"></i></button><button data-id="${s.id}" class="deleteSeriesBtn text-red-400"><i class="fas fa-trash"></i></button></td></tr>`;});
+      html+=`</tbody></table>`; pageContent.innerHTML = html;
+      document.getElementById('addSeriesBtn')?.addEventListener('click', ()=> showSeriesModal());
+      document.querySelectorAll('.editSeriesBtn').forEach(btn=>btn.addEventListener('click',(e)=>showSeriesModal(parseInt(btn.dataset.id))));
+      document.querySelectorAll('.deleteSeriesBtn').forEach(btn=>btn.addEventListener('click',(e)=>{if(confirm("Delete series?")) deleteEntity('series', parseInt(btn.dataset.id), renderSeriesPage);}));
+    }
+    function showSeriesModal(id=null) { genericMediaModal(id, 'series', getSeriesCategories, saveSeries, renderSeriesPage, 'title', 'Series Title'); }
+    function genericMediaModal(id, storageKey, getCategoriesFn, saveFn, rerenderFn, titleField, labelText) {
+      const items = JSON.parse(localStorage.getItem(STORAGE[storageKey]) || '[]');
+      const existing = id ? items.find(i=>i.id===id):null;
+      const cats = getCategoriesFn();
+      const modalHtml = `<div class="p-6"><h3>${existing?'Edit':'Add'} ${labelText}</h3><form id="genericForm"><input id="mediaName" placeholder="${labelText}" value="${existing?escapeHtml(existing[titleField]):''}" class="w-full bg-[#1e2130] border rounded p-2 my-2" required><select id="mediaCat" class="w-full bg-[#1e2130] border rounded p-2 my-2">${cats.map(c=>`<option value="${c.id}" ${existing?.categoryId===c.id?'selected':''}>${escapeHtml(c.name)}</option>`).join('')}</select><input id="mediaUrl" placeholder="Source URL" value="${existing?escapeHtml(existing.sourceUrl):''}" class="w-full bg-[#1e2130] border rounded p-2 my-2" required><div class="flex justify-end gap-2 mt-4"><button type="button" class="cancel-modal-btn bg-gray-700 px-4 py-2 rounded">Cancel</button><button type="submit" class="confirm-modal-btn bg-indigo-600 px-4 py-2 rounded">Save</button></div></form></div>`;
+      openModal(modalHtml, null);
+      document.getElementById('genericForm').addEventListener('submit',(e)=>{
+        e.preventDefault(); const nameVal = document.getElementById('mediaName').value.trim(); const catId = parseInt(document.getElementById('mediaCat').value); const urlVal = document.getElementById('mediaUrl').value.trim();
+        if(!nameVal||!urlVal) return alert("All fields required");
+        let arr = JSON.parse(localStorage.getItem(STORAGE[storageKey])||'[]');
+        if(existing){ const idx=arr.findIndex(i=>i.id===id); if(idx!==-1) arr[idx]={...arr[idx], [titleField]:nameVal, categoryId:catId, sourceUrl:urlVal};}
+        else{ arr.push({ id:Date.now(), [titleField]:nameVal, categoryId:catId, sourceUrl:urlVal }); }
+        localStorage.setItem(STORAGE[storageKey], JSON.stringify(arr)); closeModal(); rerenderFn();
+      });
+    }
+    function deleteEntity(key, id, rerender) { let arr = JSON.parse(localStorage.getItem(STORAGE[key])||'[]'); arr = arr.filter(i=>i.id!==id); localStorage.setItem(STORAGE[key], JSON.stringify(arr)); rerender(); }
+
+    function renderCategories() {
+      const liveCats = getLiveCategories(); const vodCats = getVodCategories(); const seriesCats = getSeriesCategories();
+      const renderGroup = (title, cats, type, saveFn, getFn) => `<div class="bg-[#121520] rounded-xl p-5 mb-6"><h3 class="text-xl font-semibold mb-3">${title}</h3><div class="space-y-2">${cats.map(c=>`<div class="flex justify-between items-center bg-[#1b1e2c] px-4 py-2 rounded-lg"><span><span class="font-mono">${escapeHtml(c.name)}</span> <span class="text-gray-400 text-xs">ID: ${c.id}</span></span><div><button data-id="${c.id}" data-type="${type}" class="editCatBtn text-indigo-400 mr-3"><i class="fas fa-edit"></i></button><button data-id="${c.id}" data-type="${type}" class="delCatBtn text-red-400"><i class="fas fa-trash"></i></button></div></div>`).join('')}</div><button data-type="${type}" class="addCatBtn mt-3 text-indigo-400 border border-indigo-500/40 px-4 py-1.5 rounded-lg text-sm"><i class="fas fa-plus mr-1"></i>Add Category</button></div>`;
+      let html = `<h2 class="text-2xl font-bold mb-4">Categories</h2><p class="text-gray-400 mb-6">Organize content across your platform.</p>${renderGroup('Live Categories', liveCats, 'live', saveLiveCategories, getLiveCategories)}${renderGroup('VOD Categories', vodCats, 'vod', saveVodCategories, getVodCategories)}${renderGroup('Series Categories', seriesCats, 'series', saveSeriesCategories, getSeriesCategories)}`;
+      pageContent.innerHTML = html;
+      document.querySelectorAll('.addCatBtn').forEach(btn => btn.addEventListener('click', (e) => { const type = btn.dataset.type; showCategoryModal(type); }));
+      document.querySelectorAll('.editCatBtn').forEach(btn => btn.addEventListener('click', (e) => { const id = parseInt(btn.dataset.id); const type = btn.dataset.type; showCategoryModal(type, id); }));
+      document.querySelectorAll('.delCatBtn').forEach(btn => btn.addEventListener('click', (e) => { const id = parseInt(btn.dataset.id); const type = btn.dataset.type; deleteCategoryById(type, id); }));
+    }
+    function showCategoryModal(type, id=null) { let categories, saveFn, nameValue=''; if(type==='live'){ categories=getLiveCategories(); saveFn=saveLiveCategories; } else if(type==='vod'){ categories=getVodCategories(); saveFn=saveVodCategories; } else { categories=getSeriesCategories(); saveFn=saveSeriesCategories; } if(id) { const cat = categories.find(c=>c.id===id); if(cat) nameValue=cat.name; } const modalHtml=`<div class="p-6"><h3>${id?'Edit':'Add'} Category (${type})</h3><form id="catForm"><input id="catName" placeholder="Category name" value="${escapeHtml(nameValue)}" class="w-full bg-[#1e2130] border rounded p-2 my-3"><div class="flex justify-end gap-2"><button type="button" class="cancel-modal-btn bg-gray-700 px-4 py-2 rounded">Cancel</button><button type="submit" class="confirm-modal-btn bg-indigo-600 px-4 py-2 rounded">Save</button></div></form></div>`;
+      openModal(modalHtml, null); document.getElementById('catForm').addEventListener('submit',(e)=>{ e.preventDefault(); const newName=document.getElementById('catName').value.trim(); if(!newName) return; let arr=[...categories]; if(id){ const idx=arr.findIndex(c=>c.id===id); if(idx!==-1) arr[idx].name=newName; } else{ arr.push({ id:Date.now(), name:newName }); } saveFn(arr); closeModal(); renderCategories(); }); }
+    function deleteCategoryById(type, id) { if(confirm("Delete category? Items using it may become orphaned.")){ let cats, saveFn; if(type==='live'){ cats=getLiveCategories(); saveFn=saveLiveCategories; } else if(type==='vod'){ cats=getVodCategories(); saveFn=saveVodCategories; } else{ cats=getSeriesCategories(); saveFn=saveSeriesCategories; } const newArr=cats.filter(c=>c.id!==id); saveFn(newArr); renderCategories(); } }
+    function renderConnections() { const conns=getConnections(); let html=`<h2 class="text-2xl font-bold">Active Connections</h2><p class="mb-4 text-gray-400">Live user sessions</p><table class="w-full"><thead><tr><th>User</th><th>IP Address</th><th>Device</th><th>Login Time</th></tr></thead><tbody>${conns.map(c=>`<tr><td class="p-2">${escapeHtml(c.username)}</td><td>${c.ip}</td><td>${c.device}</td><td>${c.loginTime}</td></tr>`).join('')}</tbody></table>`; pageContent.innerHTML=html; }
+
+    function escapeHtml(str){ if(!str)return ''; return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+
+    function navigateTo(page) { currentPage=page; document.querySelectorAll('.sidebar-item').forEach(el=>el.classList.remove('active')); document.querySelector(`.sidebar-item[data-page="${page}"]`).classList.add('active'); if(page==='dashboard') renderDashboard(); else if(page==='users') renderUsers(); else if(page==='livestreams') renderLiveStreams(); else if(page==='vod') renderVOD(); else if(page==='series') renderSeriesPage(); else if(page==='categories') renderCategories(); else if(page==='connections') renderConnections(); }
+    document.querySelectorAll('.sidebar-item').forEach(item=>{ item.addEventListener('click',()=>{ const page=item.dataset.page; if(page) navigateTo(page); }); });
+    document.getElementById('logoutBtn')?.addEventListener('click',()=>{ currentUser=null; loginContainer.classList.remove('hidden'); appContainer.classList.add('hidden'); });
+    document.getElementById('loginForm')?.addEventListener('submit',(e)=>{ e.preventDefault(); const user=document.getElementById('loginUsername').value; const pwd=document.getElementById('loginPassword').value; const users=getUsers(); const matched=users.find(u=>u.username===user && u.password===pwd); if(matched){ currentUser=matched; loginContainer.classList.add('hidden'); appContainer.classList.remove('hidden'); navigateTo('dashboard'); } else alert('Invalid credentials'); });
+  </script>
+</body>
+</html>
